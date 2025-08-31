@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Attendance Tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <h3 class="navbar-brand" href="#"><i class="bi bi-calendar-week"></i>Student Attendance Tracker</h3>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Link</a>
+        </li>
+      </ul>
+      <form class="d-flex" role="search">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+    </div>
+  </div>
+</nav>
+  
+
+  <!-- Add Student -->
+  <div class="section">
+    <h3>Add Student</h3>
+    <input id="studentId" placeholder="ID">
+    <input id="studentName" placeholder="Name">
+    <button onclick="addStudent()">Add</button>
+    <div id="studentMsg"></div>
+  </div>
+
+  <!-- Mark Attendance -->
+  <div class="section">
+    <h3>Mark Attendance</h3>
+    <input id="attStudentId" placeholder="Student ID">
+    <input id="attDate" type="date">
+    <select id="attStatus">
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+    </select>
+    <button onclick="markAttendance()">Mark</button>
+    <div id="attMsg"></div>
+  </div>
+
+  <!-- View Students -->
+  <div class="section">
+    <h3>All Students</h3>
+    <button onclick="getStudents()">Show Students</button>
+    <table id="studentsTable"></table>
+  </div>
+
+  <!-- View Attendance -->
+  <div class="section">
+    <h3>Student Attendance</h3>
+    <input id="viewId" placeholder="Student ID">
+    <button onclick="getAttendance()">View</button>
+    <table id="attendanceTable"></table>
+  </div>
+
+  <script>
+    const API = "http://localhost:3000";
+
+    async function addStudent() {
+      const id = document.getElementById("studentId").value;
+      const name = document.getElementById("studentName").value;
+
+      const res = await fetch(`${API}/students`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, name })
+      });
+      const data = await res.json();
+      document.getElementById("studentMsg").innerText = JSON.stringify(data);
+    }
+
+    async function getStudents() {
+      const res = await fetch(`${API}/students`);
+      const data = await res.json();
+
+      let html = "<tr><th>ID</th><th>Name</th></tr>";
+      data.forEach(s => {
+        html += `<tr><td>${s.id}</td><td>${s.name}</td></tr>`;
+      });
+      document.getElementById("studentsTable").innerHTML = html;
+    }
+
+    async function markAttendance() {
+      const studentId = document.getElementById("attStudentId").value;
+      const date = document.getElementById("attDate").value;
+      const status = document.getElementById("attStatus").value;
+
+      const res = await fetch(`${API}/attendance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId, date, status })
+      });
+      const data = await res.json();
+      document.getElementById("attMsg").innerText = JSON.stringify(data);
+    }
+
+    async function getAttendance() {
+      const studentId = document.getElementById("viewId").value;
+      const res = await fetch(`${API}/attendance/${studentId}`);
+      const data = await res.json();
+
+      let html = "<tr><th>Date</th><th>Status</th></tr>";
+      data.forEach(a => {
+        html += `<tr><td>${a.date}</td><td>${a.status}</td></tr>`;
+      });
+      document.getElementById("attendanceTable").innerHTML = html;
+    }
+  </script>
+</body>
+</html>
